@@ -1,0 +1,57 @@
+
+= form_for @status, url: statuses_path do |f|
+  .form-group
+    = f.text_area :body, class: "form-control", placeholder: "What do you think?"
+    = f.submit 'Send', class: "btn btn-info"
+
+hr
+- @activities.each do |activity|
+  - if activity.status?
+    .media
+      .media-left.pull-left
+        a href="#" 
+          = image_tag "user-avatar.png", width: '50px', clas: 'thumbnail-img'
+      .media-body
+        strong #{activity.trackable.user.first_name} #{activity.trackable.user.last_name}
+        br
+        .text-muted.small
+          = distance_of_time_in_words(activity.trackable.created_at, Time.now)  
+    br
+    p = activity.trackable.body
+    .text-muted.small #{activity.trackable.get_likes.size} Likes . #{activity.trackable.comments.count} Comments
+
+    span
+      - if user_signed_in?
+        - unless current_user.voted_for? activity.trackable
+          = link_to like_status_path(activity.trackable), method: :post
+            | #{fa_icon 'thumbs-up'} Like
+        - else
+          = link_to unlike_status_path(activity.trackable), method: :post
+            | #{fa_icon 'thumbs-up'} Unlike
+      | &nbsp;. 
+      = link_to 'View', status_path(activity.trackable)
+
+  - else
+    strong #{activity.user.first_name} #{activity.user.last_name}
+    span.text-muted
+      |  commented on #{activity.trackable.commentable.user.first_name}'s
+      |  #{link_to "status", status_path(activity.trackable.commentable)}
+    br
+    .text-muted.small
+      = distance_of_time_in_words(activity.trackable.created_at, Time.now)
+    blockquote
+      .media
+        .media-left.pull-left
+          a href="#" 
+            = image_tag "user-avatar.png", width: '30px', clas: 'thumbnail-img'
+        .media-body
+          strong #{activity.trackable.commentable.user.first_name} #{activity.trackable.commentable.user.last_name}
+          br
+          .text-muted.small
+            = distance_of_time_in_words(activity.trackable.commentable.created_at, Time.now)
+      br
+      p = activity.trackable.commentable.body
+      .text-muted.small #{activity.trackable.commentable.get_likes.size} Likes . #{activity.trackable.commentable.comments.count} Comments
+
+  hr
+= paginate @activities

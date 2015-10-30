@@ -1,0 +1,82 @@
+.media
+  .media-left.pull-left
+    a href="#" 
+      = image_tag "user-avatar.png", width: '50px', clas: 'thumbnail-img'
+  .media-body
+    strong #{@status.user.first_name} #{@status.user.last_name}
+    br
+    .text-muted.small
+      = distance_of_time_in_words(@status.created_at, Time.now)
+  
+br
+p = @status.body
+.text-muted.small #{@status.get_likes.size} Likes . #{@status.comments.count} Comments  
+br
+- if user_signed_in?
+  - unless current_user.voted_for? @status
+    = link_to like_status_path(@status), method: :post
+      | #{fa_icon 'thumbs-up'} Like
+  - else
+    = link_to unlike_status_path(@status), method: :post
+      | #{fa_icon 'thumbs-up'} Unlike
+
+hr
+= form_tag comment_status_path(@status) do
+  = text_area_tag :body, nil, class: "form-control", placeholder: "Add Comment .."
+  = submit_tag 'Comment', class: "btn btn-info btn-sm"
+br
+br
+- @root_comments.each do |comment|
+  ul.media-list
+    li.media
+      .media-left.pull-left
+        a href="#" 
+          = image_tag "user-avatar.png", width: '40px', clas: 'thumbnail-img'
+      .media-body
+        strong #{comment.user.first_name} #{comment.user.last_name}
+        span &nbsp;
+        = comment.body
+        br
+        .small
+          - if user_signed_in?
+            - unless current_user.voted_for? comment
+              = link_to "Like", like_status_path(@status, comment: comment), method: :post
+            - else
+              = link_to "Unlike", unlike_status_path(@status, comment: comment), method: :post
+
+          span  &nbsp;
+          = link_to "Reply", "#", class: "reply-comment"
+          span  &nbsp;
+          .text-muted
+            = distance_of_time_in_words(comment.created_at, Time.now)
+        br
+
+        - comment.child_comments.each do |child_comment|
+          ul.media-list
+            li.media
+              .media-left.pull-left
+                a href="#" 
+                  = image_tag "user-avatar.png", width: '40px', clas: 'thumbnail-img'
+              .media-body
+                strong #{child_comment.user.first_name} #{child_comment.user.last_name}
+                span &nbsp;
+                = child_comment.body
+                br
+                .small
+                  - if user_signed_in?
+                    - unless current_user.voted_for? child_comment
+                      = link_to "Like", like_status_path(@status, comment: child_comment), method: :post
+                    - else
+                      = link_to "Unlike", unlike_status_path(@status, comment: child_comment), method: :post
+
+                  span  &nbsp;
+                  .text-muted
+                    = distance_of_time_in_words(child_comment.created_at, Time.now)
+                br
+
+        = form_tag comment_status_path(comment: comment, status: @status)
+          = text_area_tag :body, nil, class: "form-control", placeholder: "Reply Comment .."
+          = submit_tag 'Comment', class: "btn btn-info btn-sm"
+        hr
+
+= paginate @root_comments
