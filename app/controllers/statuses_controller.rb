@@ -10,7 +10,7 @@ class StatusesController < ApplicationController
   end
 
   def show
-    @root_comments = @status.root_comments.page(params[:page]).per(10)
+    @root_comments = @status.root_comments.order(created_at: :desc).page(params[:page]).per(10)
     respond_with(@status)
   end
 
@@ -25,7 +25,8 @@ class StatusesController < ApplicationController
   def create
     @status = current_user.statuses.new(status_params)
     @status.save
-    respond_with(@status)
+
+    redirect_to root_path, notice: "Status updated"
   end
 
   def update

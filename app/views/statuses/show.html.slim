@@ -12,6 +12,7 @@ br
 p = @status.body
 .text-muted.small #{@status.get_likes.size} Likes . #{@status.comments.count} Comments  
 br
+
 - if user_signed_in?
   - unless current_user.voted_for? @status
     = link_to like_status_path(@status), method: :post
@@ -45,13 +46,17 @@ br
               = link_to "Unlike", unlike_status_path(@status, comment: comment), method: :post
 
           span  &nbsp;
-          = link_to "Reply", "#", class: "reply-comment"
+          = link_to "Reply", "javascript:void(0)", class: "reply-comment"
+
+          - if comment.get_likes.size > 0
+            | &nbsp; #{fa_icon 'thumbs-up'} #{comment.get_likes.size} 
+          
           span  &nbsp;
           .text-muted
             = distance_of_time_in_words(comment.created_at, Time.now)
         br
-
-        - comment.child_comments.each do |child_comment|
+        - child_comments = comment.child_comments.page(params[:child_page]).per(10)
+        - child_comments.each do |child_comment|
           ul.media-list
             li.media
               .media-left.pull-left
@@ -69,14 +74,20 @@ br
                     - else
                       = link_to "Unlike", unlike_status_path(@status, comment: child_comment), method: :post
 
+                  - if child_comment.get_likes.size > 0
+                    | &nbsp; #{fa_icon 'thumbs-up'} #{child_comment.get_likes.size} 
+
                   span  &nbsp;
                   .text-muted
                     = distance_of_time_in_words(child_comment.created_at, Time.now)
                 br
 
-        = form_tag comment_status_path(comment: comment, status: @status)
-          = text_area_tag :body, nil, class: "form-control", placeholder: "Reply Comment .."
-          = submit_tag 'Comment', class: "btn btn-info btn-sm"
-        hr
+        = paginate child_comments, param_name: 'child_page', params: {page: params[:page]}
+
+        .reply-comment-form
+          = form_tag comment_status_path(comment: comment, status: @status) do
+            = text_area_tag :body, nil, class: "form-control", placeholder: "Reply Comment .."
+            = submit_tag 'Comment', class: "btn btn-info btn-sm"
+          hr
 
 = paginate @root_comments
