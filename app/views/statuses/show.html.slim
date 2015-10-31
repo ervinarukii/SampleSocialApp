@@ -55,7 +55,7 @@ br
           .text-muted
             = distance_of_time_in_words(comment.created_at, Time.now)
         br
-        - child_comments = comment.child_comments.page(params[:child_page]).per(10)
+        - child_comments = comment.child_comments.page(params["child_page_#{comment.id}"]).per(10)
         - child_comments.each do |child_comment|
           ul.media-list
             li.media
@@ -82,7 +82,7 @@ br
                     = distance_of_time_in_words(child_comment.created_at, Time.now)
                 br
 
-        = paginate child_comments, param_name: 'child_page', params: {page: params[:page]}
+        = paginate child_comments, param_name: "child_page_#{comment.id}", params: {page: params[:page]}
 
         .reply-comment-form
           = form_tag comment_status_path(comment: comment, status: @status) do
