@@ -4,7 +4,8 @@ class Activity < ActiveRecord::Base
   
   belongs_to :user, foreign_key: :owner_id
   belongs_to :trackable, polymorphic: true
-  # has_many :comments, as: :commentable, dependent: :destroy
+
+  validates :trackable, :owner, presence: true
 
   def status?
     self.trackable_type.eql? "Status"

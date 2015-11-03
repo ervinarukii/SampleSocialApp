@@ -10,5 +10,4 @@ class User < ActiveRecord::Base
   has_many :comments, dependent: :destroy
   has_many :activities, as: :owner, dependent: :destroy
 
-
 end
